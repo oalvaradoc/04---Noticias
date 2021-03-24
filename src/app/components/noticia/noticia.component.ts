@@ -3,6 +3,7 @@ import { Article } from '../../interfaces/interfaces';
 import { InAppBrowser } from '@ionic-native/in-app-browser/ngx';
 import { ActionSheetController } from '@ionic/angular';
 import { SocialSharing } from '@ionic-native/social-sharing/ngx';
+import { DataLocalService } from '../../services/data-local.service';
 
 
 @Component({
@@ -13,10 +14,10 @@ import { SocialSharing } from '@ionic-native/social-sharing/ngx';
 export class NoticiaComponent implements OnInit {
 
   @Input() noticia: Article;
-
+  @Input() enFavoritos;
   @Input() indice: number;
 
-  constructor(private iab: InAppBrowser, private actionSheetCtrol: ActionSheetController, private social: SocialSharing) { }
+  constructor(private iab: InAppBrowser, private actionSheetCtrol: ActionSheetController, private social: SocialSharing, private datalocalService: DataLocalService) { }
 
   ngOnInit() {}
 
@@ -27,6 +28,30 @@ export class NoticiaComponent implements OnInit {
 
   async lanzarMenu()
   {
+      let guardarBorrarBtn;
+
+      if(this.enFavoritos){
+        guardarBorrarBtn = {
+          text: 'Borrar favorito',
+          icon: 'trash',
+          cssClass: 'action-dark',
+          handler: () => {
+            console.log('Borrar de favoritos');
+            this.datalocalService.borrarNoticias( this.noticia );
+          }
+        };
+      }else{
+        guardarBorrarBtn = {
+          text: 'Favoritos',
+          icon: 'heart',
+          cssClass: 'action-dark',
+          handler: () => {
+            console.log('Favoritos');
+            this.datalocalService.guardarNoticias( this.noticia );
+          }
+        };
+      }
+
     const actionSheet = await this.actionSheetCtrol.create({
       cssClass: 'my-custom-class',
       buttons: [{
@@ -42,14 +67,9 @@ export class NoticiaComponent implements OnInit {
             this.noticia.url
           );
         }
-      }, {
-        text: 'Favoritos',
-        icon: 'heart',
-        cssClass: 'action-dark',
-        handler: () => {
-          console.log('Favorite clicked');
-        }
-      }, {
+      }, 
+      guardarBorrarBtn,
+      {
         text: 'Cancel',
         icon: 'close',
         cssClass: 'action-dark',
